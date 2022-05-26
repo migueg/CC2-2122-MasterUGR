@@ -1,7 +1,10 @@
 #!/bin/bash
 
-#Aqui falta todo lo que tiene que ver con la clonación del repo y la instalación de la clonación
-
+if [ $1 = "clone" ] ; then
+    echo "CLONING REPOSITORY..."
+    git clone https://github.com/migueg/CC2-2122-MasterUGR.git
+    cd "./CC2-2122-MasterUGR/P1"
+fi;
 if [ $1 = "container" ] ; then
 
     if [ $2 = "start" ] ; then
@@ -19,14 +22,14 @@ if [ $1 = "container" ] ; then
         echo "Starting Prometheus server container..."
         docker run -d -p 9090:9090 --name my-prometheus --net mynetwork -v prometheus_data:/prometheus prometheus-image \
         --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.console.libraries=/etc/prometheus/console_libraries \
-        --web.console.templates=/etc/prometheus/consoles --web.enable-lifecycle --storage.tsdb.retention.time=1w
+        --web.console.templates=/etc/prometheus/consoles --web.enable-lifecycle --storage.tsdb.retention.time=7d
         echo "Prometheus server should be running on localhost:9090 if no errors"
 
         echo "Starting Prometheus node exporter A container..."
         docker run -d -p 9100:9100 --name node-exporterA --net mynetwork\
         -v /proc:/host/proc:ro -v /sys:/host/sys:ro -v /:/rootfs:ro  \
         quay.io/prometheus/node-exporter:latest \
-        --path.rootfs=/host  --path.procfs=/host/proc --path.sysfs=/host/sys 
+        --path.rootfs=/host  --path.procfs=/host/proc --path.sysfs=/host/sys
         echo "Prometheus node exporter A should be running on localhost:9100 if no errors"
         echo "--------------------------------"
 
@@ -34,7 +37,7 @@ if [ $1 = "container" ] ; then
         docker run -d -p 9110:9100 --name node-exporterB --net mynetwork\
         -v /proc:/host/proc:ro -v /sys:/host/sys:ro -v /:/rootfs:ro  \
         quay.io/prometheus/node-exporter:latest \
-        --path.rootfs=/host  --path.procfs=/host/proc --path.sysfs=/host/sys 
+        --path.rootfs=/host  --path.procfs=/host/proc --path.sysfs=/host/sys
         echo "Prometheus node exporter B should be running on localhost:9110 if no errors"
         echo "--------------------------------"
 
@@ -59,7 +62,7 @@ if [ $1 = "container" ] ; then
         -v grafana_data:/var/lib/grafana grafana/grafana-enterprise:8.2.0
         echo "Grafana B should be running on localhost:3030 if no errors"
         echo "--------------------------------"
-        
+
         echo "Starting HA proxy container..."
         docker run  -d \
         --name haproxy \
