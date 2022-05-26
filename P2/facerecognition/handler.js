@@ -57,11 +57,13 @@ module.exports = async (event, context) => {
 
     const descriptions = [];
 
+    //Primero se carga la imagen en memoria
     const img = await canvas.loadImage(filename);
 
-
+    //Se detectan las caras en la imagen cargada en memoria. Las detecciones se alamcenan en un objeto
     const detections = await faceapi.detectAllFaces(img)
     
+    //Se crea un canva y se rellena con la imagen sin detecciones
     const width = 1200;
     const height = 627;
     const cv = new Canvas(width,height),
@@ -69,13 +71,13 @@ module.exports = async (event, context) => {
     const pattern = ctx.createPattern(img, 'no-repeat');
     ctx.fillStyle = pattern;
     ctx.fill();
-
     ctx.fillRect(0, 0, width, height);
-
+    
+    //Se dibujan las detecciones en el canva con la imagen
     faceapi.draw.drawDetections(cv, detections);
 
-    ///const buffer = cv.toBuffer("image/png");
-    const dataURL = cv.toBuffer("image/png");
+    //Se renderiza el canva a un buffer de bytes
+    const dataURL = filename.toString().indexOf(".png") !== -1 ? cv.toBuffer("image/png") : cv.toBuffer("image/jpg") ;
 
     return dataURL;
 
@@ -109,16 +111,16 @@ module.exports = async (event, context) => {
    
 
     await LoadModels();
-    const base64Img = await start(filename, context);
+    const bufferImg = await start(filename, context);
     
     
     return context
     .headers({
       'Content-Type': 'image/png',
-      'Content-Length': base64Img.length
+      'Content-Length': bufferImg.length
     })
     .status(200)
-    .succeed(base64Img)
+    .succeed(bufferImg)
    
   }else{
     var result = {
